@@ -8,5 +8,11 @@
         "distDir": "dist"
       }
     }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/mobile/sme_talk_app/dist/$1"
+    }
   ]
 }
