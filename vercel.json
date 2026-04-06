@@ -1,0 +1,6 @@
+﻿{
+  "version": 2,
+  "buildCommand": "cd mobile/sme_talk_app && npm install && npm run build:web",
+  "outputDirectory": "mobile/sme_talk_app/dist",
+  "framework": null
+}
