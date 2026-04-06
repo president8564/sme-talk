@@ -1,11 +1,4 @@
 ﻿{
-  "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "outputDirectory": "mobile/sme_talk_app/dist",
+  "buildCommand": ""
 }
