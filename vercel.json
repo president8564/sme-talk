@@ -1,9 +1,3 @@
 ﻿{
-  "version": 2,
-  "builds": [
-    {
-      "src": "mobile/sme_talk_app/dist/**",
-      "use": "@vercel/static"
-    }
-  ]
+  "version": 2
 }
