@@ -989,7 +989,7 @@ body {
       </button>
 
       <!-- AI 분석 실행 -->
-      <button class="btn-ai-run" id="btn-ai" onclick="runAIAnalysis()" disabled>
+      <button class="btn-ai-run" id="btn-ai" onclick="runAIAnalysis()">
         <span id="ai-btn-icon">🤖</span> AI 분석 실행 (XGBoost · IForest · DiD · AHP)
       </button>
     </div>
@@ -1605,11 +1605,15 @@ function renderPolicy() {
 
 async function generateSimData() {
   const btn = document.getElementById('btn-simulate');
+
+  // AI 버튼은 항상 활성화
+  document.getElementById('btn-ai').disabled = false;
+
+  // 데이터 생성 애니메이션 (항상 0부터 다시 시작)
   btn.innerHTML = '<span class="loader"></span> 시뮬레이션 데이터 생성 중...';
   btn.disabled = true;
 
-  // 단계적 카운트 증가 시각화
-  let count = state.simDataCount;
+  let count = 0;
   const target = 500;
   const interval = setInterval(() => {
     count = Math.min(target, count + Math.floor(Math.random() * 30) + 10);
@@ -1620,15 +1624,23 @@ async function generateSimData() {
       btn.innerHTML = '✅ 시뮬레이션 데이터 생성 완료 (500건)';
       btn.disabled = false;
       document.getElementById('btn-ai').disabled = false;
-      // step1 done
       document.getElementById('step1').className = 'step-dot done';
       document.getElementById('step1').textContent = '✓';
       showToast('📊 500건 시뮬레이션 데이터 생성 완료\n(참여 이력·보상 기록·행동 로그)', 'success');
-
-      // 백엔드에도 전송 시도
       sendSimDataToBackend();
     }
   }, 60);
+
+  // 안전장치: 5초 후 무조건 완료 처리
+  setTimeout(() => {
+    clearInterval(interval);
+    if (state.simDataCount < target) { state.simDataCount = target; updateDataCount(); }
+    btn.innerHTML = '✅ 시뮬레이션 데이터 생성 완료 (500건)';
+    btn.disabled = false;
+    document.getElementById('btn-ai').disabled = false;
+    document.getElementById('step1').className = 'step-dot done';
+    document.getElementById('step1').textContent = '✓';
+  }, 5000);
 }
 
 async function sendSimDataToBackend() {
