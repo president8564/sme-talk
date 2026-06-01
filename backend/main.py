@@ -1,6 +1,6 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, users, merchants, esg, coupons, dashboard
+from routers import auth, users, merchants, esg, coupons, dashboard, analytics
 
 app = FastAPI(
     title="SME-TALK API",
@@ -27,6 +27,7 @@ app.include_router(merchants.router)
 app.include_router(esg.router)
 app.include_router(coupons.router)
 app.include_router(dashboard.router)
+app.include_router(analytics.router)
 
 @app.get("/")
 def root():

@@ -1,0 +1,12 @@
+﻿{
+  "name": "SME-TALK ESG-Gold Platform",
+  "short_name": "SME-TALK",
+  "description": "AI 기반 ESG 정책 환류 플랫폼",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
+  "lang": "ko",
+  "icons": []
+}

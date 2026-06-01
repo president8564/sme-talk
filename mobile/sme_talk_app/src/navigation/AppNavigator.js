@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '../theme/colors';
-
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -24,22 +22,21 @@ export default function AppNavigator() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkToken();
-  }, []);
-
-  const checkToken = async () => {
-    try {
-      const token = await AsyncStorage.getItem('access_token');
-      if (token) {
-        setUser(DUMMY_USER);
-        setAppState('app');
+    const timer = setTimeout(() => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+          setUser(DUMMY_USER);
+          setAppState('app');
+        }
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const screenProps = {
     user,
@@ -74,17 +71,10 @@ export default function AppNavigator() {
     );
   }
 
-  if (currentScreen === 'activity') {
-    return <ESGVerifyScreen {...screenProps} />;
-  }
-  if (currentScreen === 'wallet') {
-    return <WalletScreen {...screenProps} />;
-  }
-  if (currentScreen === 'policy') {
-    return <PolicyScreen {...screenProps} />;
-  }
-  if (currentScreen === 'mypage') {
-    return <MyPageScreen {...screenProps} />;
-  }
+  if (currentScreen === 'activity') return <ESGVerifyScreen {...screenProps} />;
+  if (currentScreen === 'wallet') return <WalletScreen {...screenProps} />;
+  if (currentScreen === 'policy') return <PolicyScreen {...screenProps} />;
+  if (currentScreen === 'mypage') return <MyPageScreen {...screenProps} />;
+
   return <HomeScreen {...screenProps} />;
 }
