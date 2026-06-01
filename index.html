@@ -30,17 +30,31 @@
   --radius: 16px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { background: #060d18; }
 body {
   font-family: 'Noto Sans KR', sans-serif;
   background: var(--navy);
   color: var(--text);
   height: 100dvh;
+  max-height: 100dvh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   max-width: 430px;
   margin: 0 auto;
   position: relative;
+}
+/* PC 등 큰 화면에서는 폰 크기로 고정해 빈 공간 제거 */
+@media (min-height: 920px) {
+  body {
+    height: 880px;
+    max-height: 880px;
+    margin: 24px auto;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+  }
 }
 
 /* ── SCREENS ── */
@@ -62,10 +76,10 @@ body {
 
 /* ── SCROLLABLE CONTENT ── */
 .content {
-  flex: 1;
+  flex: 1 1 auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 16px 40px;
+  padding: 0 16px 24px;
   scroll-behavior: smooth;
   min-height: 0;
 }
