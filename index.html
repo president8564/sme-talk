@@ -726,8 +726,8 @@ body {
     <div class="icon-btn" onclick="showToast('알림 없음')">🔔</div>
   </div>
   <div class="content">
-    <div class="balance-card">
-      <div class="balance-label">ESG-Gold 잔액</div>
+    <div class="balance-card" id="home-balance-card">
+      <div class="balance-label" id="home-balance-label">ESG-Gold 잔액</div>
       <div>
         <span class="balance-amount" id="home-balance">0</span>
         <span class="balance-unit">ESGG</span>
@@ -740,7 +740,7 @@ body {
       </div>
     </div>
 
-    <div class="esg-score-row">
+    <div class="esg-score-row" id="home-esg-row">
       <div class="esg-score-item esg-e">
         <div class="esg-letter">환경(E)</div>
         <div class="esg-val" id="score-e">--</div>
@@ -755,7 +755,10 @@ body {
       </div>
     </div>
 
-    <div class="card">
+    <!-- 역할별 전용 패널 (소상공인/관리자) -->
+    <div id="role-panel"></div>
+
+    <div class="card" id="recent-activity-card">
       <div class="card-title">최근 활동</div>
       <div id="recent-activities">
         <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">활동 내역 로딩 중...</div>
@@ -1429,9 +1432,20 @@ function renderHome() {
 
   setBalance(state.balance);
 
-  document.getElementById('score-e').textContent = state.esgScores.e;
-  document.getElementById('score-s').textContent = state.esgScores.s;
-  document.getElementById('score-g').textContent = state.esgScores.g;
+  // ESG 점수 영역 (시민만 표시)
+  const esgRow = document.getElementById('home-esg-row');
+  if (u.role === 'citizen') {
+    esgRow.style.display = 'flex';
+    esgRow.innerHTML = `
+      <div class="esg-score-item esg-e"><div class="esg-letter">환경(E)</div><div class="esg-val">${state.esgScores.e}</div></div>
+      <div class="esg-score-item esg-s"><div class="esg-letter">사회(S)</div><div class="esg-val">${state.esgScores.s}</div></div>
+      <div class="esg-score-item esg-g"><div class="esg-letter">거버넌스(G)</div><div class="esg-val">${state.esgScores.g}</div></div>`;
+  } else {
+    esgRow.style.display = 'none';
+  }
+
+  // 역할별 전용 패널
+  renderRolePanel(u.role);
 
   const icons = { env: { icon: '🌱', cls: 'env' }, soc: { icon: '🚲', cls: 'soc' }, gov: { icon: '🏛', cls: 'gov' } };
   const html = state.activities.map(a => {
@@ -1446,6 +1460,139 @@ function renderHome() {
     </div>`;
   }).join('');
   document.getElementById('recent-activities').innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">활동 내역이 없습니다</div>';
+}
+
+// ─────────────────────────────────────────────
+// 역할별 전용 패널
+// ─────────────────────────────────────────────
+function renderRolePanel(role) {
+  const panel = document.getElementById('role-panel');
+  const balanceLabel = document.getElementById('home-balance-label');
+  const recentCard = document.getElementById('recent-activity-card');
+
+  if (role === 'merchant') {
+    balanceLabel.textContent = '매장 적립 ESG-Gold';
+    recentCard.style.display = 'block';
+    panel.innerHTML = `
+      <div class="card">
+        <div class="card-title">🏪 매장 인증 QR 발급</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5;">
+          시민이 스캔하면 ESG 활동이 인증되고 보상이 지급됩니다.
+        </div>
+        <div style="text-align:center;padding:8px 0;">
+          <div style="width:160px;height:160px;margin:0 auto 10px;background:white;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:64px;">📱</div>
+          <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">매장코드: SME-${(state.user.email||'shop').split('@')[0].toUpperCase().slice(0,6)}</div>
+        </div>
+        <button class="btn-verify" onclick="issueMerchantQR()">
+          <span>🔄</span> 새 QR 코드 발급
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--green);">142</div>
+          <div class="stat-label">이번 달 인증 건수</div>
+          <div class="stat-change up">▲ 전월 +18%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--gold2);">7,100</div>
+          <div class="stat-label">지급 ESG-Gold</div>
+          <div class="stat-change">ESGG</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--blue);">2.1배</div>
+          <div class="stat-label">매출 연동 보너스</div>
+          <div class="stat-change">sme_bonus_rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:#9b59b6;">A</div>
+          <div class="stat-label">친환경 매장 등급</div>
+          <div class="stat-change up">▲ 우수</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">실시간 시민 인증 현황</div>
+        <div class="activity-item">
+          <div class="activity-icon env">🛍</div>
+          <div class="activity-info"><div class="activity-name">박시민님 다회용컵 인증</div><div class="activity-time">방금 전</div></div>
+          <div class="activity-reward">+50</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon env">♻️</div>
+          <div class="activity-info"><div class="activity-name">김시민님 분리수거 인증</div><div class="activity-time">12분 전</div></div>
+          <div class="activity-reward">+30</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon soc">🛍</div>
+          <div class="activity-info"><div class="activity-name">이시민님 다회용컵 인증</div><div class="activity-time">34분 전</div></div>
+          <div class="activity-reward">+50</div>
+        </div>
+      </div>`;
+
+  } else if (role === 'admin') {
+    balanceLabel.textContent = '지자체 정책 운영 ESG-Gold';
+    recentCard.style.display = 'none';
+    panel.innerHTML = `
+      <div class="card">
+        <div class="card-title">🏛 지자체 전체 현황</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--green);">1,284</div>
+            <div class="stat-label">참여 시민</div>
+            <div class="stat-change up">▲ +127</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--blue);">86</div>
+            <div class="stat-label">참여 소상공인</div>
+            <div class="stat-change up">▲ +9</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--gold2);">1.25M</div>
+            <div class="stat-label">총 발행 ESGG</div>
+            <div class="stat-change">ASA 758116412</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:#9b59b6;">+12%</div>
+            <div class="stat-label">월 참여율</div>
+            <div class="stat-change up">▲ AI 분석</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚙️ 정책 운영 권한</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5;">
+          관리자는 AI 분석 결과를 검토하고 정책 파라미터를 승인·변경할 수 있습니다.
+        </div>
+        <button class="btn-ai-run" onclick="goTab('policy')" style="margin-bottom:0;">
+          <span>📋</span> AI 정책 대시보드로 이동
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">최근 정책 변경 이력</div>
+        <div class="activity-item">
+          <div class="activity-icon gov">⚡</div>
+          <div class="activity-info"><div class="activity-name">reward_rate_env 0.07 → 0.09</div><div class="activity-time">AI 권고 · 승인됨</div></div>
+          <div class="activity-reward" style="color:var(--green);">강화</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon gov">🔄</div>
+          <div class="activity-info"><div class="activity-name">anomaly_threshold 0.15 유지</div><div class="activity-time">3일 전</div></div>
+          <div class="activity-reward" style="color:var(--gold2);">유지</div>
+        </div>
+      </div>`;
+
+  } else {
+    balanceLabel.textContent = 'ESG-Gold 잔액';
+    recentCard.style.display = 'block';
+    panel.innerHTML = '';
+  }
+}
+
+function issueMerchantQR() {
+  showToast('✅ 새 QR 코드가 발급되었습니다\n시민이 스캔하면 인증됩니다', 'success');
 }
 
 function setBalance(val) {
@@ -1601,6 +1748,26 @@ function updateDataCount() {
 
 function renderPolicy() {
   updateDataCount();
+
+  // 역할별 권한 안내
+  const u = state.user;
+  let banner = document.getElementById('policy-role-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'policy-role-banner';
+    const content = document.querySelector('#screen-policy .content');
+    content.insertBefore(banner, content.firstChild);
+  }
+  if (u && u.role === 'admin') {
+    banner.innerHTML = `<div class="algo-badge" style="border-color:rgba(46,204,113,0.4);margin-bottom:12px;">
+      <div class="algo-dot"></div>
+      <div class="algo-text">🏛 관리자 권한 · 정책 파라미터 <span>승인·변경 가능</span></div>
+    </div>`;
+  } else {
+    banner.innerHTML = `<div class="algo-badge" style="border-color:rgba(154,171,194,0.3);margin-bottom:12px;">
+      <div class="algo-text" style="color:var(--text3);">👁 ${u && u.role==='merchant'?'소상공인':'시민'} · 읽기 전용 (정책 변경은 관리자 권한)</div>
+    </div>`;
+  }
 }
 
 async function generateSimData() {
@@ -1704,7 +1871,9 @@ function displayAIResults(apiResult) {
   const r = apiResult || generateDemoAIResult();
 
   document.getElementById('ahp-section').style.display = 'block';
-  document.getElementById('approval-card').style.display = 'block';
+  // 승인 카드는 관리자만
+  document.getElementById('approval-card').style.display =
+    (state.user && state.user.role === 'admin') ? 'block' : 'none';
 
   // 점수 애니메이션
   let score = 0;
