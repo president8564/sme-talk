@@ -749,7 +749,7 @@ body {
         <span class="balance-unit">ESGG</span>
       </div>
       <div class="balance-usd">ASA: 758116412 · ≈ ₩<span id="home-balance-krw">0</span></div>
-      <div class="balance-actions">
+      <div class="balance-actions" id="home-balance-actions">
         <button class="balance-btn" onclick="goTab('wallet')"><span class="btn-icon">📤</span>보내기</button>
         <button class="balance-btn" onclick="goTab('wallet')"><span class="btn-icon">📥</span>받기</button>
         <button class="balance-btn" onclick="goTab('wallet')"><span class="btn-icon">🔄</span>교환</button>
@@ -781,13 +781,7 @@ body {
       </div>
     </div>
   </div>
-  <nav class="nav" id="nav-home">
-    <div class="nav-item active" onclick="goTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">홈</span></div>
-    <div class="nav-item" onclick="goTab('activity')"><span class="nav-icon">🌱</span><span class="nav-label">활동</span></div>
-    <div class="nav-item" onclick="goTab('wallet')"><span class="nav-icon">💰</span><span class="nav-label">지갑</span></div>
-    <div class="nav-item" onclick="goTab('policy')"><span class="nav-icon">📋</span><span class="nav-label">정책</span></div>
-    <div class="nav-item" onclick="goTab('mypage')"><span class="nav-icon">👤</span><span class="nav-label">마이</span></div>
-  </nav>
+  <nav class="nav nav-bar" data-screen="home"></nav>
 </div>
 
 <!-- ── ACTIVITY ── -->
@@ -886,13 +880,7 @@ body {
       </button>
     </div>
   </div>
-  <nav class="nav">
-    <div class="nav-item" onclick="goTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">홈</span></div>
-    <div class="nav-item active" onclick="goTab('activity')"><span class="nav-icon">🌱</span><span class="nav-label">활동</span></div>
-    <div class="nav-item" onclick="goTab('wallet')"><span class="nav-icon">💰</span><span class="nav-label">지갑</span></div>
-    <div class="nav-item" onclick="goTab('policy')"><span class="nav-icon">📋</span><span class="nav-label">정책</span></div>
-    <div class="nav-item" onclick="goTab('mypage')"><span class="nav-icon">👤</span><span class="nav-label">마이</span></div>
-  </nav>
+  <nav class="nav nav-bar" data-screen="activity"></nav>
 </div>
 
 <!-- ── WALLET ── -->
@@ -956,13 +944,7 @@ body {
       </div>
     </div>
   </div>
-  <nav class="nav">
-    <div class="nav-item" onclick="goTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">홈</span></div>
-    <div class="nav-item" onclick="goTab('activity')"><span class="nav-icon">🌱</span><span class="nav-label">활동</span></div>
-    <div class="nav-item active" onclick="goTab('wallet')"><span class="nav-icon">💰</span><span class="nav-label">지갑</span></div>
-    <div class="nav-item" onclick="goTab('policy')"><span class="nav-icon">📋</span><span class="nav-label">정책</span></div>
-    <div class="nav-item" onclick="goTab('mypage')"><span class="nav-icon">👤</span><span class="nav-label">마이</span></div>
-  </nav>
+  <nav class="nav nav-bar" data-screen="wallet"></nav>
 </div>
 
 <!-- ── POLICY / AI ── -->
@@ -1112,13 +1094,7 @@ body {
       </button>
     </div>
   </div>
-  <nav class="nav">
-    <div class="nav-item" onclick="goTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">홈</span></div>
-    <div class="nav-item" onclick="goTab('activity')"><span class="nav-icon">🌱</span><span class="nav-label">활동</span></div>
-    <div class="nav-item" onclick="goTab('wallet')"><span class="nav-icon">💰</span><span class="nav-label">지갑</span></div>
-    <div class="nav-item active" onclick="goTab('policy')"><span class="nav-icon">📋</span><span class="nav-label">정책</span></div>
-    <div class="nav-item" onclick="goTab('mypage')"><span class="nav-icon">👤</span><span class="nav-label">마이</span></div>
-  </nav>
+  <nav class="nav nav-bar" data-screen="policy"></nav>
 </div>
 
 <!-- ── MY PAGE ── -->
@@ -1192,13 +1168,7 @@ body {
       </div>
     </div>
   </div>
-  <nav class="nav">
-    <div class="nav-item" onclick="goTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">홈</span></div>
-    <div class="nav-item" onclick="goTab('activity')"><span class="nav-icon">🌱</span><span class="nav-label">활동</span></div>
-    <div class="nav-item" onclick="goTab('wallet')"><span class="nav-icon">💰</span><span class="nav-label">지갑</span></div>
-    <div class="nav-item" onclick="goTab('policy')"><span class="nav-icon">📋</span><span class="nav-label">정책</span></div>
-    <div class="nav-item active" onclick="goTab('mypage')"><span class="nav-icon">👤</span><span class="nav-label">마이</span></div>
-  </nav>
+  <nav class="nav nav-bar" data-screen="mypage"></nav>
 </div>
 
 <!-- ── QR MODAL ── -->
@@ -1377,27 +1347,43 @@ function logout() {
 // ─────────────────────────────────────────────
 // SCREENS
 // ─────────────────────────────────────────────
-function showApp() { goScreen('home'); }
+function showApp() {
+  buildNavs();
+  goScreen('home');
+}
+
+// 역할별 탭 정의
+const NAV_DEFS = {
+  citizen:  [['home','🏠','홈'],['activity','🌱','활동'],['wallet','💰','지갑'],['mypage','👤','마이']],
+  merchant: [['home','🏠','홈'],['activity','🌱','활동'],['wallet','💰','지갑'],['mypage','👤','마이']],
+  admin:    [['home','🏠','홈'],['policy','📋','정책'],['mypage','👤','마이']]
+};
+
+function getNavTabs() {
+  const role = (state.user && state.user.role) || 'citizen';
+  return NAV_DEFS[role] || NAV_DEFS.citizen;
+}
+
+// 모든 화면의 nav를 역할에 맞게 채움
+function buildNavs() {
+  const tabs = getNavTabs();
+  document.querySelectorAll('.nav-bar').forEach(nav => {
+    const current = nav.getAttribute('data-screen');
+    nav.innerHTML = tabs.map(([tab,icon,label]) => {
+      const active = (tab === current) ? ' active' : '';
+      return `<div class="nav-item${active}" onclick="goTab('${tab}')"><span class="nav-icon">${icon}</span><span class="nav-label">${label}</span></div>`;
+    }).join('');
+  });
+}
 
 function goScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
+  const el = document.getElementById('screen-' + name);
+  if (el) el.classList.add('active');
 }
 
 function goTab(tab) {
   goScreen(tab);
-  // nav 활성화
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const tabMap = { home: 0, activity: 1, wallet: 2, policy: 3, mypage: 4 };
-  const screens = ['home','activity','wallet','policy','mypage'];
-  if (screens.includes(tab)) {
-    const idx = screens.indexOf(tab);
-    document.querySelectorAll(`#screen-${tab} .nav-item`)[idx]?.classList.add('active');
-    // 각 화면의 해당 nav-item 활성화
-    document.querySelectorAll(`#screen-${tab} .nav .nav-item`).forEach((el, i) => {
-      el.classList.toggle('active', i === idx);
-    });
-  }
   if (tab === 'wallet') renderWallet();
   if (tab === 'mypage') renderMyPage();
   if (tab === 'policy') renderPolicy();
@@ -1485,6 +1471,10 @@ function renderRolePanel(role) {
   const panel = document.getElementById('role-panel');
   const balanceLabel = document.getElementById('home-balance-label');
   const recentCard = document.getElementById('recent-activity-card');
+  const balanceActions = document.getElementById('home-balance-actions');
+
+  // 관리자는 개인 지갑 액션 숨김
+  if (balanceActions) balanceActions.style.display = (role === 'admin') ? 'none' : 'flex';
 
   if (role === 'merchant') {
     balanceLabel.textContent = '매장 적립 ESG-Gold';
