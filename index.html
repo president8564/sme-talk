@@ -1296,13 +1296,24 @@ function updateClocks() {
 // AUTH
 // ─────────────────────────────────────────────
 function fillDemo(email, pw) {
-  const e = document.getElementById('login-email');
-  const p = document.getElementById('login-pw');
-  e.setAttribute('value', email);
-  p.setAttribute('value', pw);
-  e.value = email;
-  p.value = pw;
-  setTimeout(doLogin, 300);
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-pw').value = pw;
+  demoLogin(email);
+}
+
+function demoLogin(email) {
+  const btn = document.getElementById('btn-login');
+  btn.innerHTML = '<span class="loader"></span> 로그인 중...';
+  btn.disabled = true;
+  state.token = 'demo_token_' + Date.now();
+  state.user = buildDemoUser(email);
+  localStorage.setItem('smt_token', state.token);
+  localStorage.setItem('smt_user', JSON.stringify(state.user));
+  showToast('✅ 로그인 성공', 'success');
+  showApp();
+  loadDemoData();
+  btn.innerHTML = '로그인';
+  btn.disabled = false;
 }
 
 document.getElementById('btn-login').addEventListener('click', doLogin);
