@@ -2009,22 +2009,6 @@ async function confirmVerify(qrInfo) {
     renderHome();
     showToast(`✅ ${name}\n+${reward} ESGG 지급완료`, 'success');
   }
-
-    // AI 분석 버튼 활성화 안내
-    if (state.simDataCount >= 10 || state.activityCount >= 3) {
-      setTimeout(() => {
-        document.getElementById('btn-ai').disabled = false;
-      }, 500);
-    }
-
-  } catch(e) {
-    setBalance(state.balance + reward);
-    closeModal();
-    showToast(`✅ ${name}\n+${reward} ESGG 지급 (오프라인)`, 'success');
-  }
-
-  btn.innerHTML = '인증 완료 (시연용)';
-  btn.disabled = false;
 }
 
 // ─────────────────────────────────────────────
