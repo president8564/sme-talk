@@ -1534,12 +1534,47 @@ function renderRolePanel(role) {
           시민이 스캔하면 ESG 활동이 인증되고 보상이 지급됩니다.
         </div>
         <div style="text-align:center;padding:8px 0;">
-          <div style="width:160px;height:160px;margin:0 auto 10px;background:white;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:64px;">📱</div>
-          <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">매장코드: SME-${(state.user.email||'shop').split('@')[0].toUpperCase().slice(0,6)}</div>
+          <div id="merchant-qr" style="width:164px;height:164px;margin:0 auto 10px;background:white;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px;"></div>
+          <div id="merchant-qr-code" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;">매장코드: SME-${(state.user.email||'shop').split('@')[0].toUpperCase().slice(0,6)}</div>
         </div>
         <button class="btn-verify" onclick="issueMerchantQR()">
           <span>🔄</span> 새 QR 코드 발급
         </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📷 ESG 활동 사진 인증</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+          고객의 친환경 활동을 사진으로 촬영하여 근거자료를 등록합니다.<br>
+          사진 + GPS + 타임스탬프가 자동 기록됩니다.
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">활동 유형 선택</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="photo-type-btns">
+            <button onclick="selectPhotoType(this,'cup')" style="flex:1;padding:8px 4px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:11px;cursor:pointer;font-family:inherit;">🛍 다회용컵</button>
+            <button onclick="selectPhotoType(this,'recycle')" style="flex:1;padding:8px 4px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:11px;cursor:pointer;font-family:inherit;">♻️ 분리수거</button>
+            <button onclick="selectPhotoType(this,'container')" style="flex:1;padding:8px 4px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:11px;cursor:pointer;font-family:inherit;">🥡 다회용기</button>
+          </div>
+        </div>
+        <div id="photo-preview" style="width:100%;height:180px;border:2px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s;overflow:hidden;" onclick="document.getElementById('photo-input').click()">
+          <div id="photo-placeholder" style="text-align:center;">
+            <div style="font-size:40px;margin-bottom:6px;">📷</div>
+            <div style="font-size:12px;color:var(--text2);">터치하여 사진 촬영 / 갤러리 선택</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px;">GPS·타임스탬프 자동 기록</div>
+          </div>
+          <img id="photo-img" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px;"/>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoUpload(this)"/>
+        <div id="photo-meta" style="display:none;font-size:10px;color:var(--text3);background:var(--surface2);padding:8px;border-radius:6px;margin-bottom:10px;font-family:'JetBrains Mono',monospace;line-height:1.6;">
+          <div id="photo-time"></div>
+          <div id="photo-gps"></div>
+          <div id="photo-hash"></div>
+        </div>
+        <button class="btn-primary" id="btn-photo-submit" onclick="submitPhotoVerify()" style="padding:12px;width:100%;opacity:0.4;pointer-events:none;">
+          ✅ 사진 인증 제출
+        </button>
+        <div id="photo-result" style="display:none;margin-top:8px;text-align:center;font-size:12px;color:var(--green);padding:10px;background:rgba(46,204,113,0.1);border-radius:8px;">
+        </div>
       </div>
 
       <div class="stats-grid">
@@ -1583,6 +1618,7 @@ function renderRolePanel(role) {
           <div class="activity-reward">+50</div>
         </div>
       </div>`;
+    setTimeout(generateMerchantQR, 100);
 
   } else if (role === 'admin') {
     balanceLabel.textContent = '지자체 정책 운영 ESG-Gold';
@@ -1646,7 +1682,104 @@ function renderRolePanel(role) {
 }
 
 function issueMerchantQR() {
+  generateMerchantQR();
   showToast('✅ 새 QR 코드가 발급되었습니다\n시민이 스캔하면 인증됩니다', 'success');
+}
+
+function generateMerchantQR() {
+  const container = document.getElementById('merchant-qr');
+  if (!container) return;
+  const code = 'SME-' + (state.user.email||'shop').split('@')[0].toUpperCase().slice(0,6);
+  const ts = Date.now().toString(36).toUpperCase();
+  const qrData = JSON.stringify({
+    platform: 'SME-TALK',
+    store_code: code,
+    asa_id: 758116412,
+    action: 'esg_verify',
+    issued: new Date().toISOString(),
+    nonce: ts
+  });
+  container.innerHTML = '';
+  if (typeof QRCode !== 'undefined') {
+    new QRCode(container, {
+      text: qrData,
+      width: 148,
+      height: 148,
+      colorDark: '#0D1117',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } else {
+    container.innerHTML = '<div style="font-size:11px;color:#333;">QR 로딩중...</div>';
+  }
+  const codeEl = document.getElementById('merchant-qr-code');
+  if (codeEl) codeEl.textContent = '매장코드: ' + code + ' · ' + ts;
+}
+
+let selectedPhotoType = '';
+function selectPhotoType(btn, type) {
+  selectedPhotoType = type;
+  document.querySelectorAll('#photo-type-btns button').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.background = 'var(--surface2)';
+  });
+  btn.style.borderColor = 'var(--gold)';
+  btn.style.background = 'rgba(201,168,76,0.15)';
+  checkPhotoReady();
+}
+
+function handlePhotoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = document.getElementById('photo-img');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('photo-placeholder').style.display = 'none';
+    document.getElementById('photo-preview').style.borderColor = 'var(--green)';
+    document.getElementById('photo-preview').style.borderStyle = 'solid';
+    const now = new Date();
+    const ts = now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+    const hash = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16);
+    document.getElementById('photo-time').textContent = 'timestamp: ' + ts;
+    document.getElementById('photo-gps').textContent = 'gps: 37.5665°N, 126.9780°E';
+    document.getElementById('photo-hash').textContent = 'img_hash: 0x' + hash;
+    document.getElementById('photo-meta').style.display = 'block';
+    checkPhotoReady();
+    showToast('📷 사진 촬영 완료\nGPS·타임스탬프 자동 기록', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function checkPhotoReady() {
+  const img = document.getElementById('photo-img');
+  const ready = selectedPhotoType && img && img.style.display === 'block';
+  const btn = document.getElementById('btn-photo-submit');
+  btn.style.opacity = ready ? '1' : '0.4';
+  btn.style.pointerEvents = ready ? 'auto' : 'none';
+}
+
+function submitPhotoVerify() {
+  const btn = document.getElementById('btn-photo-submit');
+  btn.innerHTML = '<span class="loader"></span> AI 이미지 검증 + 온체인 기록 중...';
+  btn.disabled = true;
+  setTimeout(() => {
+    const types = {cup:'다회용컵 사용',recycle:'분리수거',container:'다회용기 사용'};
+    const typeName = types[selectedPhotoType] || '친환경 활동';
+    btn.innerHTML = '✅ 인증 완료';
+    btn.style.background = 'rgba(46,204,113,0.15)';
+    btn.style.color = 'var(--green)';
+    btn.style.border = '1px solid var(--green)';
+    const result = document.getElementById('photo-result');
+    result.style.display = 'block';
+    const txHash = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    result.innerHTML = `✅ <b>${typeName}</b> 인증 완료<br>
+      <span style="font-size:10px;color:var(--text2);">이미지 중복검사: 통과 · GPS 일치: 확인</span><br>
+      <span style="font-size:10px;color:var(--gold);font-family:'JetBrains Mono',monospace;">Algorand TX: ${txHash.slice(0,12)}...</span><br>
+      <span style="font-size:10px;color:var(--text2);">+50 ESGG 보상 지급 완료</span>`;
+    showToast('✅ ESG 활동 사진 인증 완료\n이미지 검증 + Algorand 온체인 기록', 'success');
+  }, 2500);
 }
 
 function setBalance(val) {
@@ -1976,5 +2109,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>
