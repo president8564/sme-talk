@@ -1298,12 +1298,11 @@ function updateClocks() {
 function fillDemo(email, pw) {
   const e = document.getElementById('login-email');
   const p = document.getElementById('login-pw');
+  e.setAttribute('value', email);
+  p.setAttribute('value', pw);
   e.value = email;
   p.value = pw;
-  e.dispatchEvent(new Event('input', {bubbles:true}));
-  p.dispatchEvent(new Event('input', {bubbles:true}));
-  e.focus();
-  e.blur();
+  setTimeout(doLogin, 300);
 }
 
 document.getElementById('btn-login').addEventListener('click', doLogin);
