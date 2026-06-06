@@ -1705,7 +1705,16 @@ function renderRolePanel(role) {
   } else {
     balanceLabel.textContent = 'ESG-Gold 잔액';
     recentCard.style.display = 'block';
-    panel.innerHTML = '';
+    panel.innerHTML = `
+      <div class="card" style="border:1px solid var(--gold);">
+        <div class="card-title">📷 매장 QR 스캔</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+          소상공인이 발급한 QR 코드를 스캔하면 ESG 활동이 인증되고 ESG-Gold가 지급됩니다.
+        </div>
+        <button class="btn-primary" onclick="doVerify('cup','다회용컵 사용 인증',50,'env')" style="padding:14px;width:100%;font-size:14px;">
+          📷 QR 코드 스캔하기
+        </button>
+      </div>`;
   }
 }
 
@@ -1869,6 +1878,12 @@ function doVerify(type, name, reward, cat) {
   pendingVerify = { type, name, reward, cat };
   document.getElementById('modal-title').textContent = name;
   document.getElementById('qr-scan-result').style.display = 'none';
+  document.getElementById('qr-scan-overlay').style.display = 'flex';
+  // 버튼 상태 초기화
+  const cbtn = document.getElementById('modal-confirm-btn');
+  cbtn.textContent = '📱 시연용: QR 인식 시뮬레이션';
+  cbtn.disabled = false;
+  cbtn.onclick = simulateQRScan;
   document.getElementById('qr-modal').classList.add('show');
 
   // 실제 카메라 QR 리더 시도
