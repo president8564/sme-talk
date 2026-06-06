@@ -738,13 +738,13 @@ body {
 
   <div class="demo-accounts">
     <p>🎯 시연 계정 (클릭하면 자동 입력)</p>
-    <div class="demo-row" ontouchend="fillDemo('citizen1@sme-talk.kr','Demo1234!');event.preventDefault();" onclick="fillDemo('citizen1@sme-talk.kr','Demo1234!')">
+    <div class="demo-row" onclick="fillDemo('citizen1@sme-talk.kr','Demo1234!')">
       <span>👤 시민: citizen1@sme-talk.kr</span><span>Demo1234!</span>
     </div>
-    <div class="demo-row" ontouchend="fillDemo('admin@sme-talk.kr','Admin1234!');event.preventDefault();" onclick="fillDemo('admin@sme-talk.kr','Admin1234!')">
+    <div class="demo-row" onclick="fillDemo('admin@sme-talk.kr','Admin1234!')">
       <span>🏛 관리자: admin@sme-talk.kr</span><span>Admin1234!</span>
     </div>
-    <div class="demo-row" ontouchend="fillDemo('merchant@sme-talk.kr','Merchant1!');event.preventDefault();" onclick="fillDemo('merchant@sme-talk.kr','Merchant1!')">
+    <div class="demo-row" onclick="fillDemo('merchant@sme-talk.kr','Merchant1!')">
       <span>🏪 소상공인: merchant@sme-talk.kr</span><span>Merchant1!</span>
     </div>
   </div>
@@ -1298,22 +1298,6 @@ function updateClocks() {
 function fillDemo(email, pw) {
   document.getElementById('login-email').value = email;
   document.getElementById('login-pw').value = pw;
-  demoLogin(email);
-}
-
-function demoLogin(email) {
-  const btn = document.getElementById('btn-login');
-  btn.innerHTML = '<span class="loader"></span> 로그인 중...';
-  btn.disabled = true;
-  state.token = 'demo_token_' + Date.now();
-  state.user = buildDemoUser(email);
-  localStorage.setItem('smt_token', state.token);
-  localStorage.setItem('smt_user', JSON.stringify(state.user));
-  showToast('✅ 로그인 성공', 'success');
-  showApp();
-  loadDemoData();
-  btn.innerHTML = '로그인';
-  btn.disabled = false;
 }
 
 document.getElementById('btn-login').addEventListener('click', doLogin);
