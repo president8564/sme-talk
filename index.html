@@ -179,8 +179,8 @@ body {
 .login-divider { text-align: center; color: var(--text3); font-size: 12px; margin: 16px 0; }
 .demo-accounts { background: rgba(201,168,76,0.08); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-top: 16px; }
 .demo-accounts p { font-size: 11px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
-.demo-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s; }
-.demo-row:hover { background: rgba(255,255,255,0.05); }
+.demo-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; cursor: pointer; padding: 10px 8px; border-radius: 6px; transition: background 0.2s; -webkit-tap-highlight-color: rgba(201,168,76,0.3); touch-action: manipulation; user-select: none; }
+.demo-row:hover, .demo-row:active { background: rgba(255,255,255,0.1); }
 .demo-row:last-child { margin-bottom: 0; }
 
 /* ── PAGE HEADER ── */
@@ -738,13 +738,13 @@ body {
 
   <div class="demo-accounts">
     <p>🎯 시연 계정 (클릭하면 자동 입력)</p>
-    <div class="demo-row" onclick="fillDemo('citizen1@sme-talk.kr','Demo1234!')">
+    <div class="demo-row" ontouchend="fillDemo('citizen1@sme-talk.kr','Demo1234!');event.preventDefault();" onclick="fillDemo('citizen1@sme-talk.kr','Demo1234!')">
       <span>👤 시민: citizen1@sme-talk.kr</span><span>Demo1234!</span>
     </div>
-    <div class="demo-row" onclick="fillDemo('admin@sme-talk.kr','Admin1234!')">
+    <div class="demo-row" ontouchend="fillDemo('admin@sme-talk.kr','Admin1234!');event.preventDefault();" onclick="fillDemo('admin@sme-talk.kr','Admin1234!')">
       <span>🏛 관리자: admin@sme-talk.kr</span><span>Admin1234!</span>
     </div>
-    <div class="demo-row" onclick="fillDemo('merchant@sme-talk.kr','Merchant1!')">
+    <div class="demo-row" ontouchend="fillDemo('merchant@sme-talk.kr','Merchant1!');event.preventDefault();" onclick="fillDemo('merchant@sme-talk.kr','Merchant1!')">
       <span>🏪 소상공인: merchant@sme-talk.kr</span><span>Merchant1!</span>
     </div>
   </div>
@@ -1296,8 +1296,14 @@ function updateClocks() {
 // AUTH
 // ─────────────────────────────────────────────
 function fillDemo(email, pw) {
-  document.getElementById('login-email').value = email;
-  document.getElementById('login-pw').value = pw;
+  const e = document.getElementById('login-email');
+  const p = document.getElementById('login-pw');
+  e.value = email;
+  p.value = pw;
+  e.dispatchEvent(new Event('input', {bubbles:true}));
+  p.dispatchEvent(new Event('input', {bubbles:true}));
+  e.focus();
+  e.blur();
 }
 
 document.getElementById('btn-login').addEventListener('click', doLogin);
