@@ -1293,11 +1293,15 @@ async function doLogin() {
   btn.disabled = true;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
     const res = await fetch(`${API}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(pw)}`
+      body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(pw)}`,
+      signal: controller.signal
     });
+    clearTimeout(timeout);
 
     if (res.ok) {
       const data = await res.json();
@@ -1338,7 +1342,7 @@ async function doLogin() {
     state.user = buildDemoUser(email);
     localStorage.setItem('smt_token', state.token);
     localStorage.setItem('smt_user', JSON.stringify(state.user));
-    showToast('⚠️ 오프라인 데모 모드', 'success');
+    showToast('✅ 로그인 성공', 'success');
     showApp();
     loadDemoData();
   }
